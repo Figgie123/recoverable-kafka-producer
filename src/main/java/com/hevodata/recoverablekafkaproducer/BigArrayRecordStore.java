@@ -102,8 +102,22 @@ public class BigArrayRecordStore implements RecoverableRecordStore {
                 lastFlushedMarker = -1;
             }
             for (long i = lastFlushedMarker + 1; i < bigArray.getHeadIndex(); i++) {
-                totalRecords++;
-                recoveryRecordConsumer.accept(i, bigArray.get(i));
+                try
+                {
+                    byte[] consumeBytes = bigArray.get(i);
+                    recoveryRecordConsumer.accept ( i, consumeBytes );
+                    totalRecords++;
+                }
+                catch ( java.nio.BufferUnderflowException bue )
+                {
+                    // This occurs on the bigArray.get() method
+                    log.error ( "BufferUnderflowException occurred, skipping item.", bue );
+                }
+                catch ( RecoveryException re )
+                {
+                    // If the recovered record doesn't have a topic, this exception is raised
+                    log.error ( "RecoveryException occurred, skipping item.", re );
+                }
             }
         } catch (Exception e) {
             log.error("Recovery records consumption failed", e);

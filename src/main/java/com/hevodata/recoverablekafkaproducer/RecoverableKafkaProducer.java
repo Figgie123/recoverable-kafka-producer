@@ -106,6 +106,13 @@ public class RecoverableKafkaProducer implements Closeable {
         Wrapper<Long> lastConsumedMarker = new Wrapper<>();
         long totalRecordsRecovered = this.recoverableRecordStore.consumeRecoverableRecords((marker, recoveryRecord) -> {
             RecoverableProducerRecord recoverableProducerRecord = this.recoverableProducerRecordSerde.deserialize(recoveryRecord);
+
+            // If the recovered record's topic is blank, throw an exception
+            if ( recoverableProducerRecord.getTopic().length() == 0 )
+            {
+                throw new RecoveryException ( "Topic name has length of 0." );
+            }
+
             ProducerRecord<byte[], byte[]> producerRecord =
                     new ProducerRecord<>(recoverableProducerRecord.getTopic(),
                             recoverableProducerRecord.getKey(), recoverableProducerRecord.getMessage());

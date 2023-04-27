@@ -6,7 +6,7 @@
 
     <groupId>com.hevodata</groupId>
     <artifactId>recoverable-kafka-producer</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.2b</version>
     <packaging>jar</packaging>
 
     <name>Recoverable Kafka Producer</name>

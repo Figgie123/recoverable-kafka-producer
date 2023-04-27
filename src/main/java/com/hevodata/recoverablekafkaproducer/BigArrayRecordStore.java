@@ -102,6 +102,7 @@ public class BigArrayRecordStore implements RecoverableRecordStore {
                 lastFlushedMarker = -1;
             }
             for (long i = lastFlushedMarker + 1; i < bigArray.getHeadIndex(); i++) {
+                log.info ( "Flushing record #" + i + " of " + bigArray.getHeadIndex() );
                 try
                 {
                     byte[] consumeBytes = bigArray.get(i);
@@ -117,6 +118,11 @@ public class BigArrayRecordStore implements RecoverableRecordStore {
                 {
                     // If the recovered record doesn't have a topic, this exception is raised
                     log.error ( "RecoveryException occurred, skipping item.", re );
+                }
+                catch ( java.lang.IndexOutOfBoundsException ioobe )
+                {
+                    // This exception is raised within the get() method
+                    log.error ( "IndexOutOfBoundsException occurred, skipping item.", ioobe );
                 }
             }
         } catch (Exception e) {

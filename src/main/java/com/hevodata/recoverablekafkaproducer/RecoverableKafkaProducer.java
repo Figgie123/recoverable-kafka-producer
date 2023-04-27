@@ -124,7 +124,15 @@ public class RecoverableKafkaProducer implements Closeable {
         }
         log.info("{} records recovered", totalRecordsRecovered);
         if (lastConsumedMarker.get() != null) {
-            this.recoverableRecordTracker.moveMarker(lastConsumedMarker.get());
+            try
+            {
+                this.recoverableRecordTracker.moveMarker(lastConsumedMarker.get());
+            }
+            catch ( RecoveryRuntimeException rre )
+            {
+                // This occurred when an IndexOutOfBoundsException happened in InMemoryKafkaCallbackRecordTracker
+                log.error ( "RecoveryRuntimeException occurred, skipping item.", rre );
+            }
         }
         this.recoverableRecordStore.onInitialize();
     }

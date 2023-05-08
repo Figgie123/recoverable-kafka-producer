@@ -67,7 +67,20 @@ public class RecoverableKafkaProducer implements Closeable {
     }
 
     public void publish(ProducerRecord<byte[], byte[]> record, RecoverableCallback recoverableCallback) throws RecoveryException {
-        byte[] recoveryRecordBytes = this.recoverableProducerRecordSerde.serialize(buildProducerRecoveryRecord(record, recoverableCallback));
+        RecoverableProducerRecord producerRecord = buildProducerRecoveryRecord(record, recoverableCallback);
+
+        // If the record, or parts necessary to publish are null, print a message and continue
+        // without publishing.
+        if ( producerRecord == null
+           || producerRecord.getTopic() == null
+           || producerRecord.getKey() == null
+           || producerRecord.getMessage() == null )
+        {
+            log.warn ( "Publishing record, topic, key or message is null. Not publishing." );
+            return;
+        }
+
+        byte[] recoveryRecordBytes = this.recoverableProducerRecordSerde.serialize ( producerRecord );
 
         try {
             long marker = this.recoverableRecordStore.publishRecord(recoveryRecordBytes);
